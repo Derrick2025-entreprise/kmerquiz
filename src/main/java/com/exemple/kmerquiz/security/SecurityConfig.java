@@ -1,10 +1,16 @@
 package com.exemple.kmerquiz.security;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -29,6 +35,8 @@ import static com.exemple.kmerquiz.security.Permission.*;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private static final Logger AUDIT = LoggerFactory.getLogger("AUDIT");
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
@@ -85,8 +93,12 @@ public class SecurityConfig {
                         // ---------- Tout le reste ----------
                         .anyRequest().authenticated())
 
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint(handlers.entryPoint())       // 401
+                // Tâche 7.3 : accès non authentifié à une ressource protégée -> audit + 401
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            AUDIT.warn("UNAUTHENTICATED_ACCESS uri={} ip={}", request.getRequestURI(), request.getRemoteAddr());
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        })
                         .accessDeniedHandler(handlers.accessDeniedHandler()))  // 403
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -100,10 +112,20 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(UserPrincipalService userPrincipalService,
-                                                       PasswordEncoder passwordEncoder) {
+                                                       PasswordEncoder passwordEncoder,
+                                                       AuthenticationEventPublisher authenticationEventPublisher) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userPrincipalService);
         provider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager(provider);
+        ProviderManager manager = new ProviderManager(provider);
+        // Sans cela, notre ProviderManager ne publie aucun événement (LOGIN_SUCCESS / LOGIN_FAILURE)
+        manager.setAuthenticationEventPublisher(authenticationEventPublisher);
+        return manager;
+    }
+
+    // Tâche 7.1 : publie AuthenticationSuccessEvent / AbstractAuthenticationFailureEvent
+    @Bean
+    public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher publisher) {
+        return new DefaultAuthenticationEventPublisher(publisher);
     }
 
     @Bean

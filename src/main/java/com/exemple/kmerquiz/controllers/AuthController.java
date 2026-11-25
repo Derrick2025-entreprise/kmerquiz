@@ -10,6 +10,8 @@ import com.exemple.kmerquiz.services.AuthService;
 import com.exemple.kmerquiz.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private static final Logger AUDIT = LoggerFactory.getLogger("AUDIT");
 
     private final AuthService authService;
     private final UserService userService;
@@ -30,7 +34,19 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody UserRegisterRequest request) {
-        return authService.register(request);
+        AuthResponse response = authService.register(request);
+        AUDIT.info("REGISTER user={} role={}", response.user().email(), response.user().role());
+        return response;
+    }
+
+    /**
+     * Déconnexion : avec JWT (stateless) le serveur ne garde pas de session ;
+     * le client supprime ses jetons. On trace l'événement dans le journal d'audit.
+     */
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@AuthenticationPrincipal UserPrincipal principal) {
+        AUDIT.info("LOGOUT user={}", principal.getUsername());
     }
 
     @PostMapping("/refresh")

@@ -1,11 +1,15 @@
 package com.exemple.kmerquiz.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +19,8 @@ import java.util.Map;
 
 @Service
 public class JwtService {
+
+    private static final Logger AUDIT = LoggerFactory.getLogger("AUDIT");
 
     public static final String CLAIM_TYPE = "type";
     public static final String TYPE_ACCESS = "access";
@@ -61,12 +67,16 @@ public class JwtService {
 
     public boolean validateToken(String token) {
         try {
-            parse(token);
+            Jwts.parserBuilder().setSigningKey(signingKey).build().parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            AUDIT.warn("JWT_EXPIRED user={}", e.getClaims().getSubject());
+        } catch (SignatureException e) {
+            AUDIT.warn("JWT_BAD_SIGNATURE");
         } catch (JwtException | IllegalArgumentException e) {
-            // signature invalide, jeton expiré, malformé ou vide
-            return false;
+            AUDIT.warn("JWT_INVALID type={}", e.getClass().getSimpleName());
         }
+        return false;
     }
 
     public String getUsernameFromToken(String token) {
