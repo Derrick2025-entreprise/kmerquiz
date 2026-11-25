@@ -1,0 +1,1151 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-11-24T07:13:45.000Z",
+  "__export_source": "insomnia.desktop.app:v10",
+  "resources": [
+    {
+      "_id": "wrk_kmerquiz",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "KmerQuiz API",
+      "description": "Routes de l'API kmerquiz (Spring Boot + JWT)",
+      "scope": "collection",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_kmerquiz",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "admin_email": "admin@gmail.com",
+        "admin_password": "admin",
+        "player_email": "joueur1@test.cm",
+        "player_password": "secret123",
+        "admin_token": "{% response 'body', 'req_login_admin', 'b64::JC5hY2Nlc3NUb2tlbg==::46b', 'when-expired', 60 %}",
+        "player_token": "{% response 'body', 'req_login_player', 'b64::JC5hY2Nlc3NUb2tlbg==::46b', 'when-expired', 60 %}",
+        "refresh_token": "{% response 'body', 'req_login_admin', 'b64::JC5yZWZyZXNoVG9rZW4=::46b', 'when-expired', 60 %}",
+        "user_id": "1",
+        "category_id": "1",
+        "difficulty_id": "1",
+        "question_id": "1",
+        "quiz_id": "1"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "admin_email",
+          "admin_password",
+          "player_email",
+          "player_password",
+          "admin_token",
+          "player_token",
+          "refresh_token",
+          "user_id",
+          "category_id",
+          "difficulty_id",
+          "question_id",
+          "quiz_id"
+        ]
+      },
+      "isPrivate": false,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "1. Auth",
+      "description": "Commencez par ici : Register joueur, puis Login admin et Login joueur. Les jetons sont ensuite récupérés automatiquement.",
+      "environment": {},
+      "metaSortKey": -2000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Register joueur",
+      "description": "201 attendu. Une 2e fois → 409 (email déjà utilisé).",
+      "method": "POST",
+      "url": "http://localhost:8080/api/auth/register",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pseudo\": \"joueur1\",\n  \"email\": \"{{ _.player_email }}\",\n  \"password\": \"{{ _.player_password }}\"\n}"
+      },
+      "metaSortKey": 1,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_login_admin",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login admin",
+      "description": "200 attendu. Fournit admin_token.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/auth/login",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.admin_email }}\",\n  \"password\": \"{{ _.admin_password }}\"\n}"
+      },
+      "metaSortKey": 2,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_login_player",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login joueur",
+      "description": "200 attendu. Fournit player_token.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/auth/login",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.player_email }}\",\n  \"password\": \"{{ _.player_password }}\"\n}"
+      },
+      "metaSortKey": 3,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_refresh",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Refresh token",
+      "description": "200 attendu : nouveaux jetons.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/auth/refresh",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"refreshToken\": \"{{ _.refresh_token }}\"\n}"
+      },
+      "metaSortKey": 4,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_me_admin",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Me (admin)",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/auth/me",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 5,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_me_player",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Me (joueur)",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/auth/me",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 6,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_users",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "2. Utilisateurs",
+      "description": "",
+      "environment": {},
+      "metaSortKey": -9000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_user_create",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Inscription (POST /api/users)",
+      "description": "Route publique. 201 attendu.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/users",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pseudo\": \"joueur9\",\n  \"email\": \"joueur9@test.cm\",\n  \"phone\": \"690000000\",\n  \"avatar\": null,\n  \"password\": \"secret123\"\n}"
+      },
+      "metaSortKey": 7,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_users_all",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Liste des utilisateurs (admin)",
+      "description": "200 avec admin, 403 avec joueur.",
+      "method": "GET",
+      "url": "http://localhost:8080/api/users",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 8,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_user_by_id",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "Utilisateur par id",
+      "description": "Soi-même ou user:read.",
+      "method": "GET",
+      "url": "http://localhost:8080/api/users/{{ _.user_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 9,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_cat",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "3. Catégories",
+      "description": "",
+      "environment": {},
+      "metaSortKey": -13000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_cat_create",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Créer une catégorie (admin)",
+      "description": "201. Notez idCategory et mettez-le dans category_id.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/categories",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Culture générale\",\n  \"description\": \"Questions variées\"\n}"
+      },
+      "metaSortKey": 10,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_cat_all",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Lister les catégories",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/categories",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 11,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_cat_search",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Rechercher par nom",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/categories?name=cul",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 12,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_cat_by_id",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Catégorie par id",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/categories/{{ _.category_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 13,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_cat_update",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Modifier une catégorie (admin)",
+      "description": "",
+      "method": "PUT",
+      "url": "http://localhost:8080/api/categories/{{ _.category_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Culture G.\",\n  \"description\": \"Modifiée\"\n}"
+      },
+      "metaSortKey": 14,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_cat_delete",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Supprimer une catégorie (admin)",
+      "description": "204 attendu.",
+      "method": "DELETE",
+      "url": "http://localhost:8080/api/categories/{{ _.category_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 15,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_diff",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "4. Difficultés",
+      "description": "",
+      "environment": {},
+      "metaSortKey": -20000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_diff_create",
+      "_type": "request",
+      "parentId": "fld_diff",
+      "name": "Créer une difficulté (admin)",
+      "description": "201. Notez idDifficulty → difficulty_id.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/difficulties",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"label\": \"Facile\"\n}"
+      },
+      "metaSortKey": 16,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_diff_all",
+      "_type": "request",
+      "parentId": "fld_diff",
+      "name": "Lister les difficultés",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/difficulties",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 17,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_diff_by_id",
+      "_type": "request",
+      "parentId": "fld_diff",
+      "name": "Difficulté par id",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/difficulties/{{ _.difficulty_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 18,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_diff_update",
+      "_type": "request",
+      "parentId": "fld_diff",
+      "name": "Modifier une difficulté (admin)",
+      "description": "",
+      "method": "PUT",
+      "url": "http://localhost:8080/api/difficulties/{{ _.difficulty_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"label\": \"Très facile\"\n}"
+      },
+      "metaSortKey": 19,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_diff_delete",
+      "_type": "request",
+      "parentId": "fld_diff",
+      "name": "Supprimer une difficulté (admin)",
+      "description": "",
+      "method": "DELETE",
+      "url": "http://localhost:8080/api/difficulties/{{ _.difficulty_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 20,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_q",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "5. Questions",
+      "description": "",
+      "environment": {},
+      "metaSortKey": -26000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_q_create",
+      "_type": "request",
+      "parentId": "fld_q",
+      "name": "Créer une question (joueur)",
+      "description": "201. Notez idQuestion → question_id. Pour lier difficulté/catégories, mettez leurs id.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/questions",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"label1\": \"Quelle est la capitale du Cameroun ?\",\n  \"label2\": null,\n  \"label3\": null,\n  \"time\": \"00:00:30\",\n  \"idDifficulty\": null,\n  \"categoryIds\": [],\n  \"responses\": [\n    {\n      \"text\": \"Douala\",\n      \"isValid\": false\n    },\n    {\n      \"text\": \"Yaoundé\",\n      \"isValid\": true\n    },\n    {\n      \"text\": \"Garoua\",\n      \"isValid\": false\n    }\n  ]\n}"
+      },
+      "metaSortKey": 21,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_q_all",
+      "_type": "request",
+      "parentId": "fld_q",
+      "name": "Lister les questions",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/questions",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 22,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_q_filter",
+      "_type": "request",
+      "parentId": "fld_q",
+      "name": "Filtrer (catégorie / difficulté)",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/questions?categoryId={{ _.category_id }}&difficultyId={{ _.difficulty_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 23,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_q_by_id",
+      "_type": "request",
+      "parentId": "fld_q",
+      "name": "Question par id",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/questions/{{ _.question_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 24,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_q_update",
+      "_type": "request",
+      "parentId": "fld_q",
+      "name": "Modifier une question (admin)",
+      "description": "",
+      "method": "PUT",
+      "url": "http://localhost:8080/api/questions/{{ _.question_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"label1\": \"Capitale du Cameroun ?\",\n  \"time\": \"00:00:20\",\n  \"responses\": [\n    {\n      \"text\": \"Yaoundé\",\n      \"isValid\": true\n    },\n    {\n      \"text\": \"Bafoussam\",\n      \"isValid\": false\n    }\n  ]\n}"
+      },
+      "metaSortKey": 25,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_q_delete",
+      "_type": "request",
+      "parentId": "fld_q",
+      "name": "Supprimer une question (admin)",
+      "description": "",
+      "method": "DELETE",
+      "url": "http://localhost:8080/api/questions/{{ _.question_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 26,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_quiz",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "6. Quiz",
+      "description": "",
+      "environment": {},
+      "metaSortKey": -33000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_create",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Créer un quiz (joueur)",
+      "description": "201. Notez idQuiz → quiz_id.",
+      "method": "POST",
+      "url": "http://localhost:8080/api/quizzes",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Géographie du Cameroun\",\n  \"description\": \"10 questions sur le Cameroun\",\n  \"beginDate\": \"2026-12-01\",\n  \"endDate\": \"2026-12-31\",\n  \"totalScore\": 100,\n  \"scoreMin\": 50,\n  \"nbreQuestion\": 10,\n  \"time\": \"00:10:00\"\n}"
+      },
+      "metaSortKey": 27,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_all",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Lister les quiz",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/quizzes",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 28,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_search",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Rechercher par titre",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/quizzes?title=geo",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 29,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_by_id",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Quiz par id",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 30,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_update",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Modifier son quiz (créateur)",
+      "description": "",
+      "method": "PUT",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Géographie du Cameroun (v2)\",\n  \"nbreQuestion\": 10,\n  \"totalScore\": 100,\n  \"scoreMin\": 40\n}"
+      },
+      "metaSortKey": 31,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_add_q",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Ajouter des questions au quiz",
+      "description": "Ajoutez plusieurs id : [1, 2, 3]",
+      "method": "POST",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}/questions",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"questionIds\": [\n    {{ _.question_id }}\n  ]\n}"
+      },
+      "metaSortKey": 32,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_list_q",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Questions du quiz",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}/questions",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 33,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_rm_q",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Retirer une question du quiz",
+      "description": "",
+      "method": "DELETE",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}/questions/{{ _.question_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 34,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_quiz_delete",
+      "_type": "request",
+      "parentId": "fld_quiz",
+      "name": "Supprimer un quiz (admin)",
+      "description": "204 avec admin, 403 avec joueur.",
+      "method": "DELETE",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.admin_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 35,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "fld_err",
+      "_type": "request_group",
+      "parentId": "wrk_kmerquiz",
+      "name": "7. Tests de sécurité (erreurs attendues)",
+      "description": "",
+      "environment": {},
+      "metaSortKey": -43000,
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_noauth",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Faux jeton → 401",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/quizzes",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "abc.def.ghi",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 36,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_noauth2",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Sans jeton → 401",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/auth/me",
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "body": {},
+      "metaSortKey": 37,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_badpwd",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Mauvais mot de passe → 401",
+      "description": "",
+      "method": "POST",
+      "url": "http://localhost:8080/api/auth/login",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.admin_email }}\",\n  \"password\": \"mauvais\"\n}"
+      },
+      "metaSortKey": 38,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_invalid",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Inscription invalide → 400",
+      "description": "",
+      "method": "POST",
+      "url": "http://localhost:8080/api/auth/register",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pseudo\": \"\",\n  \"email\": \"pasunemail\",\n  \"password\": \"123\"\n}"
+      },
+      "metaSortKey": 39,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_forbidden",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Joueur crée une catégorie → 403",
+      "description": "",
+      "method": "POST",
+      "url": "http://localhost:8080/api/categories",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Interdite\"\n}"
+      },
+      "metaSortKey": 40,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_delquiz",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Joueur supprime un quiz → 403",
+      "description": "",
+      "method": "DELETE",
+      "url": "http://localhost:8080/api/quizzes/{{ _.quiz_id }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 41,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_badq",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Question sans bonne réponse → 400",
+      "description": "",
+      "method": "POST",
+      "url": "http://localhost:8080/api/questions",
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"label1\": \"Test\",\n  \"responses\": [\n    {\n      \"text\": \"A\",\n      \"isValid\": false\n    },\n    {\n      \"text\": \"B\",\n      \"isValid\": false\n    }\n  ]\n}"
+      },
+      "metaSortKey": 42,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    },
+    {
+      "_id": "req_err_404",
+      "_type": "request",
+      "parentId": "fld_err",
+      "name": "Catégorie inexistante → 404",
+      "description": "",
+      "method": "GET",
+      "url": "http://localhost:8080/api/categories/9999",
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.player_token }}",
+        "prefix": "Bearer"
+      },
+      "body": {},
+      "metaSortKey": 43,
+      "settingFollowRedirects": "global",
+      "created": 1795504425798,
+      "modified": 1795504425798
+    }
+  ]
+}
