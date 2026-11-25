@@ -18,6 +18,7 @@ import com.exemple.kmerquiz.repository.QuestionRepository;
 import com.exemple.kmerquiz.repository.QuizQuestionRepository;
 import com.exemple.kmerquiz.repository.ResponseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -45,14 +47,19 @@ public class QuestionService {
         apply(question, request);
         question = questionRepository.save(question);
         saveAnswers(question, request.responses());
+        log.info("Question créée idQuestion={} nbReponses={} idDifficulte={}",
+                question.getIdQuestion(), request.responses().size(), request.idDifficulty());
         return toDto(question);
     }
 
     @Transactional(readOnly = true)
     public List<QuestionDto> getAll(Long categoryId, Long difficultyId) {
-        return questionRepository.search(categoryId, difficultyId).stream()
+        List<QuestionDto> result = questionRepository.search(categoryId, difficultyId).stream()
                 .map(this::toDto)
                 .toList();
+        log.debug("Recherche de questions idCategorie={} idDifficulte={} -> {} résultat(s)",
+                categoryId, difficultyId, result.size());
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +74,7 @@ public class QuestionService {
         // les réponses sont remplacées entièrement
         responseRepository.deleteByQuestionId(id);
         saveAnswers(question, request.responses());
+        log.info("Question modifiée idQuestion={} nbReponses={}", id, request.responses().size());
         return toDto(question);
     }
 
@@ -75,6 +83,7 @@ public class QuestionService {
         quizQuestionRepository.deleteByQuestionId(id);
         responseRepository.deleteByQuestionId(id);
         questionRepository.delete(question);
+        log.info("Question supprimée idQuestion={}", id);
     }
 
     Question findQuestion(Long id) {

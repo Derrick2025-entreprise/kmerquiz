@@ -18,12 +18,14 @@ import com.exemple.kmerquiz.repository.UserRepository;
 import com.exemple.kmerquiz.security.CurrentUser;
 import com.exemple.kmerquiz.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -35,6 +37,7 @@ public class QuizService {
     private final QuestionService questionService;
 
     public QuizDto create(QuizRequest request) {
+        log.debug("Création d'un quiz titre='{}' nbQuestions={}", request.title(), request.nbreQuestion());
         validate(request);
         Quiz quiz = new Quiz();
         apply(quiz, request);
@@ -43,15 +46,23 @@ public class QuizService {
             User creator = userRepository.getReferenceById(current.getIdUser());
             quiz.setCreatedBy(creator);
         }
-        return toDto(quizRepository.save(quiz));
+        Quiz saved = quizRepository.save(quiz);
+        log.info("Quiz créé idQuiz={} idUser={} statut={} nbQuestions={}",
+                saved.getIdQuiz(),
+                saved.getCreatedBy() == null ? null : saved.getCreatedBy().getIdUser(),
+                saved.getStatus(), saved.getNbreQuestion());
+        return toDto(saved);
     }
 
     @Transactional(readOnly = true)
     public List<QuizDto> getAll(StatusQuiz status, String title, Long creatorId) {
         String titleFilter = (title == null || title.isBlank()) ? null : title.trim();
-        return quizRepository.search(status, titleFilter, creatorId).stream()
+        List<QuizDto> result = quizRepository.search(status, titleFilter, creatorId).stream()
                 .map(this::toDto)
                 .toList();
+        log.debug("Recherche de quiz statut={} titre='{}' idCreateur={} -> {} résultat(s)",
+                status, titleFilter, creatorId, result.size());
+        return result;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +75,7 @@ public class QuizService {
         Quiz quiz = findQuiz(id);
         checkCanEdit(quiz);
         apply(quiz, request);
+        log.info("Quiz modifié idQuiz={}", id);
         return toDto(quiz);
     }
 
@@ -72,6 +84,7 @@ public class QuizService {
         checkCanEdit(quiz);
         quizQuestionRepository.deleteByQuizId(id);
         quizRepository.delete(quiz);
+        log.info("Quiz supprimé idQuiz={}", id);
     }
 
     // ---------- questions du quiz ----------
@@ -111,6 +124,8 @@ public class QuizService {
             link.setStatus(true);
             quizQuestionRepository.save(link);
         }
+        log.info("Questions ajoutées au quiz idQuiz={} demandées={} nouvelles={} total={}",
+                idQuiz, ids.size(), toAdd, current + toAdd);
         return getQuestions(idQuiz);
     }
 
@@ -122,6 +137,7 @@ public class QuizService {
             throw new ResourceNotFoundException("La question " + idQuestion + " n'est pas dans le quiz " + idQuiz);
         }
         quizQuestionRepository.deleteById(key);
+        log.info("Question retirée du quiz idQuiz={} idQuestion={}", idQuiz, idQuestion);
     }
 
     // ---------- utilitaires ----------

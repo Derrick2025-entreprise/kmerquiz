@@ -5,6 +5,7 @@ import com.exemple.kmerquiz.dto.UserResponse;
 import com.exemple.kmerquiz.entity.User;
 import com.exemple.kmerquiz.entity.enums.Role;
 import com.exemple.kmerquiz.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -36,11 +38,17 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.PLAYER);
         user.setInscriptionDate(LocalDate.now());
-        return toResponse(userRepository.save(user));
+        User saved = userRepository.save(user);
+        // jamais le mot de passe dans les logs
+        log.info("Utilisateur créé idUser={} role={} pseudo={}",
+                saved.getIdUser(), saved.getRole(), saved.getPseudo());
+        return toResponse(saved);
     }
 
     public List<UserResponse> findAll() {
-        return userRepository.findAll().stream().map(this::toResponse).toList();
+        List<UserResponse> users = userRepository.findAll().stream().map(this::toResponse).toList();
+        log.debug("Liste des utilisateurs -> {} résultat(s)", users.size());
+        return users;
     }
 
     public UserResponse findById(Long id) {
