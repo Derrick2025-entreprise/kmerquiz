@@ -5,6 +5,7 @@ import com.exemple.kmerquiz.dto.UserResponse;
 import com.exemple.kmerquiz.entity.User;
 import com.exemple.kmerquiz.entity.enums.Role;
 import com.exemple.kmerquiz.repository.UserRepository;
+import com.exemple.kmerquiz.utils.LogMasker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,8 +41,9 @@ public class UserService {
         user.setInscriptionDate(LocalDate.now());
         User saved = userRepository.save(user);
         // jamais le mot de passe dans les logs
-        log.info("Utilisateur créé idUser={} role={} pseudo={}",
-                saved.getIdUser(), saved.getRole(), saved.getPseudo());
+        log.info("Utilisateur créé idUser={} role={} pseudo={} email={} phone={}",
+                saved.getIdUser(), saved.getRole(), saved.getPseudo(),
+                LogMasker.maskEmail(saved.getEmail()), LogMasker.maskPhone(saved.getPhone()));
         return toResponse(saved);
     }
 

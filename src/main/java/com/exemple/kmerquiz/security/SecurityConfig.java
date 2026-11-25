@@ -57,6 +57,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/error").permitAll()
 
+                        // ---------- Actuator (Partie 8.4) ----------
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+
                         // ---------- Authentification ----------
                         .requestMatchers("/api/auth/me").authenticated()
 
