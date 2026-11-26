@@ -19,7 +19,6 @@ public class ServiceLoggingAspect {
     @Value("${app.logging.slow-threshold-ms:500}")
     private long slowThresholdMs;
 
-    // Dans ce projet, les services sont dans com.exemple.kmerquiz.services (et services.impl)
     @Pointcut("execution(public * com.exemple.kmerquiz.services..*(..))")
     void serviceMethods() {}
 

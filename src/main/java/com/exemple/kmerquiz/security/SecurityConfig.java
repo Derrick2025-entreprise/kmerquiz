@@ -50,54 +50,32 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
-                        // ---------- Routes publiques ----------
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/error").permitAll()
-
-                        // ---------- Actuator (Partie 8.4) ----------
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
-
-                        // ---------- Authentification ----------
                         .requestMatchers("/api/auth/me").authenticated()
-
-                        // ---------- Utilisateurs ----------
                         .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority(USER_READ.getPermission())
-                        // /api/users/{id} : soi-même ou user:read (vérifié dans UserController)
                         .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
-
-                        // ---------- Catégories ----------
                         .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/**").hasAuthority(CATEGORY_READ.getPermission())
                         .requestMatchers(HttpMethod.POST, "/api/categories").hasAuthority(CATEGORY_CREATE.getPermission())
                         .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasAuthority(CATEGORY_UPDATE.getPermission())
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasAuthority(CATEGORY_DELETE.getPermission())
-
-                        // ---------- Difficultés ----------
                         .requestMatchers(HttpMethod.GET, "/api/difficulties", "/api/difficulties/**").authenticated()
                         .requestMatchers("/api/difficulties", "/api/difficulties/**").hasRole("ADMIN")
-
-                        // ---------- Questions ----------
                         .requestMatchers(HttpMethod.GET, "/api/questions", "/api/questions/**").hasAuthority(QUESTION_READ.getPermission())
                         .requestMatchers(HttpMethod.POST, "/api/questions").hasAuthority(QUESTION_CREATE.getPermission())
                         .requestMatchers(HttpMethod.PUT, "/api/questions/**").hasAuthority(QUESTION_UPDATE.getPermission())
                         .requestMatchers(HttpMethod.DELETE, "/api/questions/**").hasAuthority(QUESTION_DELETE.getPermission())
-
-                        // ---------- Quiz ----------
                         .requestMatchers(HttpMethod.GET, "/api/quizzes", "/api/quizzes/**").hasAuthority(QUIZ_READ.getPermission())
-                        // gérer les questions d'un quiz = modifier le quiz (avant la règle DELETE générale)
                         .requestMatchers(HttpMethod.POST, "/api/quizzes/*/questions").hasAuthority(QUIZ_UPDATE.getPermission())
                         .requestMatchers(HttpMethod.DELETE, "/api/quizzes/*/questions/*").hasAuthority(QUIZ_UPDATE.getPermission())
                         .requestMatchers(HttpMethod.POST, "/api/quizzes").hasAuthority(QUIZ_CREATE.getPermission())
                         .requestMatchers(HttpMethod.PUT, "/api/quizzes/**").hasAuthority(QUIZ_UPDATE.getPermission())
                         .requestMatchers(HttpMethod.DELETE, "/api/quizzes/**").hasAuthority(QUIZ_DELETE.getPermission())
-
-                        // ---------- Tout le reste ----------
                         .anyRequest().authenticated())
-
-                // Tâche 7.3 : accès non authentifié à une ressource protégée -> audit + 401
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             AUDIT.warn("UNAUTHENTICATED_ACCESS uri={} ip={}", request.getRequestURI(), request.getRemoteAddr());
@@ -121,12 +99,9 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userPrincipalService);
         provider.setPasswordEncoder(passwordEncoder);
         ProviderManager manager = new ProviderManager(provider);
-        // Sans cela, notre ProviderManager ne publie aucun événement (LOGIN_SUCCESS / LOGIN_FAILURE)
         manager.setAuthenticationEventPublisher(authenticationEventPublisher);
         return manager;
     }
-
-    // Tâche 7.1 : publie AuthenticationSuccessEvent / AbstractAuthenticationFailureEvent
     @Bean
     public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher publisher) {
         return new DefaultAuthenticationEventPublisher(publisher);

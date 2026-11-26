@@ -52,11 +52,10 @@ public class JwtFilter extends OncePerRequestFilter {
                     MDC.put("userId", username);
                 }
             } catch (UsernameNotFoundException e) {
-                // utilisateur supprimé depuis l'émission du jeton : requête anonyme
             }
         }
 
-        // 7. Passer au filtre suivant
+
         filterChain.doFilter(request, response);
     }
 }

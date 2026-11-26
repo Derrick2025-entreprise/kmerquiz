@@ -87,8 +87,6 @@ public class QuizService {
         log.info("Quiz supprimé idQuiz={}", id);
     }
 
-    // ---------- questions du quiz ----------
-
     @Transactional(readOnly = true)
     public List<QuestionDto> getQuestions(Long idQuiz) {
         findQuiz(idQuiz);
@@ -139,15 +137,10 @@ public class QuizService {
         quizQuestionRepository.deleteById(key);
         log.info("Question retirée du quiz idQuiz={} idQuestion={}", idQuiz, idQuestion);
     }
-
-    // ---------- utilitaires ----------
-
     private Quiz findQuiz(Long id) {
         return quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz non trouvé avec l'id " + id));
     }
-
-    /** Seul le créateur du quiz ou un administrateur peut le modifier. */
     private void checkCanEdit(Quiz quiz) {
         if (CurrentUser.isAdmin()) {
             return;

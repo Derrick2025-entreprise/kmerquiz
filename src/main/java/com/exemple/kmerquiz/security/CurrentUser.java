@@ -3,7 +3,6 @@ package com.exemple.kmerquiz.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-/** Accès à té depuis la couche service. */
 public final class CurrentUser {
 
     private CurrentUser() {
